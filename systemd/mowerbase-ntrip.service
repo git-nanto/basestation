@@ -1,0 +1,14 @@
+[Unit]
+Description=MowerBase NTRIP Server/Client
+After=mowerbase-gps.service
+Wants=network.target
+
+[Service]
+User=mowerbase
+ExecStart=/opt/mowerbase/venv/bin/python /opt/mowerbase/ntrip.py
+Restart=on-failure
+RestartSec=5
+LogsDirectory=mowerbase
+
+[Install]
+WantedBy=multi-user.target

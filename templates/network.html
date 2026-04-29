@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Network — MowerBase{% endblock %}
+
+{% block content %}
+<h1>Network</h1>
+
+<section class="card">
+  <h2>MowerBase Hotspot</h2>
+  <p style="color:#aaa; font-size:0.9rem;">
+    The MowerBase always broadcasts its own open WiFi network so you can reach the web UI
+    even when no home WiFi is available.
+  </p>
+  {% if ap_status and ap_status.active %}
+  <div class="alert alert-success">
+    <strong>Active</strong> — SSID: <strong>{{ ap_status.ssid }}</strong> (open, no password)
+  </div>
+  {% else %}
+  <div class="alert alert-warning">
+    Hotspot not active. Check NetworkManager AP profile on the device.
+  </div>
+  {% endif %}
+  <table class="status-table" style="margin-top:0.5rem;">
+    <tr><td>IP Address</td><td><code>10.42.0.1</code></td></tr>
+    <tr><td>Web UI</td><td><code>http://10.42.0.1</code></td></tr>
+    <tr><td>Connected clients</td><td>{{ ap_status.clients if ap_status else 0 }}</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Home WiFi</h2>
+  {% if wifi_ssid %}
+  <div class="alert alert-success">
+    Connected to: <strong>{{ wifi_ssid }}</strong>
+  </div>
+  <p style="color:#aaa; font-size:0.9rem;">
+    Device reachable at <code>http://mowerbase.local</code> on your home network.
+    NetworkManager will automatically reconnect if home WiFi drops.
+  </p>
+  {% else %}
+  <div class="alert alert-warning">
+    Not connected to home WiFi. Connect below to enable NTRIP relay and remote access.
+  </div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Change WiFi</h2>
+  <button class="btn btn-secondary" onclick="scanWifi()">Scan for Networks</button>
+  <div id="wifi-scan-result" style="display:none; margin-top:1rem;">
+    <div class="form-group">
+      <label for="wifi-ssid-select">Select Network</label>
+      <select id="wifi-ssid-select" class="form-control" onchange="onSsidSelected()">
+        <option value="">-- choose --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="wifi-ssid-manual">Or enter SSID manually</label>
+      <input type="text" id="wifi-ssid-manual" class="form-control" placeholder="Network name">
+    </div>
+    <div class="form-group">
+      <label for="wifi-password">Password</label>
+      <input type="password" id="wifi-password" class="form-control" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="connectWifi()">Connect</button>
+    <div id="wifi-connect-result" class="alert" style="display:none; margin-top:0.5rem;"></div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function scanWifi() {
+  const resultDiv = document.getElementById('wifi-scan-result');
+  const select = document.getElementById('wifi-ssid-select');
+  select.innerHTML = '<option value="">Scanning...</option>';
+  resultDiv.style.display = 'block';
+
+  fetch('/api/wifi/scan')
+    .then(r => r.json())
+    .then(data => {
+      select.innerHTML = '<option value="">-- choose --</option>';
+      if (data.ok && data.networks.length > 0) {
+        data.networks.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n.ssid;
+          opt.textContent = `${n.ssid} (${n.signal}%)`;
+          select.appendChild(opt);
+        });
+      } else {
+        select.innerHTML = '<option value="">No networks found</option>';
+      }
+    })
+    .catch(e => {
+      select.innerHTML = `<option value="">Scan failed: ${e}</option>`;
+    });
+}
+
+function onSsidSelected() {
+  const selected = document.getElementById('wifi-ssid-select').value;
+  if (selected) {
+    document.getElementById('wifi-ssid-manual').value = selected;
+  }
+}
+
+function connectWifi() {
+  const ssid = document.getElementById('wifi-ssid-manual').value.trim()
+             || document.getElementById('wifi-ssid-select').value;
+  const password = document.getElementById('wifi-password').value;
+  const resultEl = document.getElementById('wifi-connect-result');
+
+  if (!ssid) {
+    resultEl.style.display = 'block';
+    resultEl.className = 'alert alert-error';
+    resultEl.textContent = 'Please enter or select a network name.';
+    return;
+  }
+
+  resultEl.style.display = 'block';
+  resultEl.className = 'alert alert-info';
+  resultEl.textContent = 'Connecting...';
+
+  fetch('/api/wifi/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ssid, password})
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        resultEl.className = 'alert alert-success';
+        resultEl.textContent = data.message || 'Connected!';
+        setTimeout(() => location.reload(), 3000);
+      } else {
+        resultEl.className = 'alert alert-error';
+        resultEl.textContent = 'Failed: ' + (data.error || 'Unknown error');
+      }
+    })
+    .catch(e => {
+      resultEl.className = 'alert alert-error';
+      resultEl.textContent = 'Request failed: ' + e;
+    });
+}
+</script>
+{% endblock %}

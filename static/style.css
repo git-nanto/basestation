@@ -1,0 +1,391 @@
+/* MowerBase Web UI — Minimal dark theme, mobile-friendly, no external CDN */
+
+/* ── Reset & base ────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:        #0d1117;
+  --bg2:       #161b22;
+  --bg3:       #21262d;
+  --border:    #30363d;
+  --text:      #c9d1d9;
+  --text-dim:  #8b949e;
+  --accent:    #58a6ff;
+  --green:     #3fb950;
+  --yellow:    #d29922;
+  --red:       #f85149;
+  --cyan:      #4ecdc4;
+  --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 0.5px;
+}
+
+nav {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+nav a:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+nav a.active {
+  background: var(--bg3);
+  color: var(--accent);
+}
+
+/* ── Main content ────────────────────────────────────────────────────── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  flex: 1;
+  width: 100%;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  color: var(--text);
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+h3 {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.5rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.badge-fixed    { background: #1a4731; color: var(--green); border: 1px solid var(--green); }
+.badge-survey   { background: #3d2e0a; color: var(--yellow); border: 1px solid var(--yellow); }
+.badge-float    { background: #1a2e4a; color: var(--accent); border: 1px solid var(--accent); }
+.badge-error    { background: #3d1015; color: var(--red); border: 1px solid var(--red); }
+.badge-boot     { background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-ok       { background: #1a4731; color: var(--green); }
+.badge-nc       { background: var(--bg3); color: var(--text-dim); }
+.badge-warning  { background: #3d2e0a; color: var(--yellow); }
+
+/* ── Alerts ──────────────────────────────────────────────────────────── */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.alert-success { background: #1a4731; color: var(--green);  border-color: var(--green); }
+.alert-warning { background: #3d2e0a; color: var(--yellow); border-color: var(--yellow); }
+.alert-error   { background: #3d1015; color: var(--red);    border-color: var(--red); }
+.alert-info    { background: #1a2e4a; color: var(--accent); border-color: var(--accent); }
+
+/* ── Status table ────────────────────────────────────────────────────── */
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.status-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-table td:first-child {
+  color: var(--text-dim);
+  width: 40%;
+}
+
+.small-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.small-table td {
+  padding: 0.25rem 0.5rem;
+}
+
+/* ── Progress bar ────────────────────────────────────────────────────── */
+.progress-bar-outer {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  height: 20px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-bar-inner {
+  background: var(--cyan);
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 4px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.3rem;
+}
+
+.form-group.inline label {
+  display: inline;
+  margin-bottom: 0;
+}
+
+.form-control {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  width: 100%;
+  font-family: var(--font);
+  transition: border-color 0.15s;
+}
+
+.form-group.inline .form-control {
+  width: auto;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.radio-label:hover {
+  border-color: var(--accent);
+}
+
+.radio-label input[type="radio"] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.plugin-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s, filter 0.15s;
+  text-decoration: none;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary   { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+.btn-secondary { background: var(--bg3); color: var(--text); border-color: var(--border); }
+.btn-warning   { background: var(--yellow); color: #0d1117; border-color: var(--yellow); }
+.btn-danger    { background: var(--red); color: #fff; border-color: var(--red); }
+
+.btn-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ── Log viewer ──────────────────────────────────────────────────────── */
+.log-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.log-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  height: 400px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.log-box div {
+  padding: 0.05rem 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.log-error   { color: var(--red); }
+.log-warning { color: var(--yellow); }
+.log-info    { color: var(--text); }
+.log-debug   { color: var(--text-dim); }
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding: 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  nav {
+    width: 100%;
+  }
+
+  nav a {
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-row {
+    flex-direction: column;
+  }
+
+  .log-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

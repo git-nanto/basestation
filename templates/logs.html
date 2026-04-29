@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Logs — MowerBase{% endblock %}
+
+{% block content %}
+<h1>System Logs</h1>
+
+<section class="card">
+  <div class="log-controls">
+    <div class="form-group inline">
+      <label for="log-service">Service</label>
+      <select id="log-service" class="form-control" onchange="reconnectStream()">
+        <option value="all">All Services</option>
+        {% for svc in log_files %}
+        <option value="{{ svc }}">{{ svc }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group inline">
+      <label for="log-level">Level</label>
+      <select id="log-level" class="form-control" onchange="reconnectStream()">
+        <option value="">ALL</option>
+        <option value="DEBUG">DEBUG</option>
+        <option value="INFO">INFO</option>
+        <option value="WARNING">WARNING</option>
+        <option value="ERROR">ERROR</option>
+      </select>
+    </div>
+    <button class="btn btn-secondary" onclick="downloadLog()">Download</button>
+    <button class="btn btn-secondary" onclick="clearDisplay()">Clear</button>
+  </div>
+
+  <div id="log-output" class="log-box"></div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let eventSource = null;
+const MAX_LINES = 500;
+
+function reconnectStream() {
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+  startStream();
+}
+
+function startStream() {
+  const service = document.getElementById('log-service').value;
+  const level = document.getElementById('log-level').value;
+  const url = `/api/logs/stream?service=${encodeURIComponent(service)}&level=${encodeURIComponent(level)}`;
+
+  eventSource = new EventSource(url);
+  const logBox = document.getElementById('log-output');
+
+  eventSource.onmessage = function(e) {
+    const line = document.createElement('div');
+    const text = e.data;
+    line.textContent = text;
+
+    // Colour coding
+    if (text.includes('[ERROR]')) line.className = 'log-error';
+    else if (text.includes('[WARNING]')) line.className = 'log-warning';
+    else if (text.includes('[DEBUG]')) line.className = 'log-debug';
+    else line.className = 'log-info';
+
+    logBox.appendChild(line);
+
+    // Trim old lines
+    while (logBox.children.length > MAX_LINES) {
+      logBox.removeChild(logBox.firstChild);
+    }
+
+    // Auto-scroll to bottom
+    logBox.scrollTop = logBox.scrollHeight;
+  };
+
+  eventSource.onerror = function() {
+    // SSE reconnects automatically — just log it
+    const line = document.createElement('div');
+    line.className = 'log-warning';
+    line.textContent = '--- stream reconnecting ---';
+    logBox.appendChild(line);
+  };
+}
+
+function clearDisplay() {
+  document.getElementById('log-output').innerHTML = '';
+}
+
+function downloadLog() {
+  const service = document.getElementById('log-service').value;
+  window.location.href = `/api/logs/download?service=${encodeURIComponent(service)}`;
+}
+
+// Start streaming on page load
+window.addEventListener('load', startStream);
+window.addEventListener('beforeunload', () => {
+  if (eventSource) eventSource.close();
+});
+</script>
+{% endblock %}

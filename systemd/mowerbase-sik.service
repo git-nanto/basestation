@@ -1,0 +1,27 @@
+[Unit]
+Description=MowerBase SiK Forwarder — RTCM pipe to SiK 915MHz radio
+Documentation=https://github.com/yourusername/mowerbase
+After=mowerbase-ntrip.service
+# Note: SiK radio is optional — this service will wait/retry if radio is absent.
+# Do NOT set BindsTo or Requires on mowerbase-ntrip — we want this to always run.
+
+[Service]
+Type=simple
+User=mowerbase
+Group=mowerbase
+
+LogsDirectory=mowerbase
+LogsDirectoryMode=0755
+
+ExecStart=/opt/mowerbase/venv/bin/python /opt/mowerbase/sik_forwarder.py
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Allow USB serial access
+SupplementaryGroups=dialout plugdev
+
+[Install]
+WantedBy=multi-user.target

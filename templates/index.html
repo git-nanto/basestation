@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — MowerBase{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<!-- Hardware state banner — populated by dashboard.js -->
+<div id="hw-banner" style="display:none; margin-bottom:1rem;"></div>
+
+<!-- Fix Status Badge -->
+<section class="card" id="status-card">
+  <h2>Fix Status</h2>
+  <div id="fix-badge" class="badge badge-boot">Loading...</div>
+  <div id="survey-progress-section" style="display:none; margin-top:1rem;">
+    <label>Survey-In Progress</label>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="survey-progress-bar" style="width:0%"></div>
+    </div>
+    <div class="progress-labels">
+      <span id="survey-elapsed">0:00</span>
+      <span id="survey-accuracy">-- m</span>
+      <span id="survey-target">/ 5:00</span>
+    </div>
+    <div id="survey-sats" style="font-size:0.85rem; color:#aaa; margin-top:0.3rem;"></div>
+  </div>
+  <div id="resurvey-pending-section" style="display:none; margin-top:1rem;" class="alert alert-warning">
+    <strong>Re-survey complete — review required</strong>
+    <p>A new position was surveyed. The displacement from the stored position exceeds 5cm.</p>
+    <table class="small-table" id="resurvey-comparison"></table>
+    <div>
+      <button class="btn btn-danger" onclick="resurveyAction('reject')">Keep Existing</button>
+      <button class="btn btn-primary" onclick="resurveyAction('accept')">Accept New Position</button>
+    </div>
+  </div>
+</section>
+
+<!-- Drift -->
+<section class="card" id="drift-card">
+  <h2>Position Drift</h2>
+  <div id="drift-display">
+    <span id="drift-value">---</span>
+    <span id="drift-alert-badge" style="display:none" class="badge badge-error">DRIFT ALERT</span>
+  </div>
+</section>
+
+<!-- SiK Radio -->
+<section class="card" id="link-card">
+  <h2>SiK Radio</h2>
+  <table class="status-table">
+    <tr>
+      <td>SiK Radio</td>
+      <td><span id="sik-status" class="badge">---</span></td>
+      <td id="sik-rate">---</td>
+    </tr>
+  </table>
+  <p style="font-size:0.8rem; color:#888; margin-top:0.4rem;">
+    Forwards RTCM corrections to the mower via 915MHz radio link.
+  </p>
+</section>
+
+<!-- GPS -->
+<section class="card" id="gps-card">
+  <h2>GPS</h2>
+  <table class="status-table">
+    <tr><td>Satellites</td><td id="num-sats">---</td></tr>
+    <tr><td>HDOP</td><td id="hdop">---</td></tr>
+    <tr><td>Position</td><td id="position">---</td></tr>
+    <tr><td>Altitude</td><td id="altitude">---</td></tr>
+  </table>
+</section>
+
+<!-- System -->
+<section class="card" id="system-card">
+  <h2>System</h2>
+  <button id="restart-btn" class="btn btn-danger" onclick="restartServices()">Restart All Services</button>
+  <p id="restart-msg" style="display:none; margin-top:0.5rem; color: var(--warning);"></p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/dashboard.js"></script>
+<script>
+function resurveyAction(action) {
+  fetch('/api/resurvey/' + action, {method: 'POST'})
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) location.reload();
+    });
+}
+
+function restartServices() {
+  if (!confirm('Restart all MowerBase services?\n\nThe web UI will be unavailable for ~15 seconds.')) return;
+  const btn = document.getElementById('restart-btn');
+  const msg = document.getElementById('restart-msg');
+  btn.disabled = true;
+  fetch('/api/restart', {method: 'POST'})
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        msg.style.display = 'block';
+        let countdown = 15;
+        const tick = setInterval(() => {
+          msg.textContent = `Restarting... reloading in ${countdown}s`;
+          countdown--;
+          if (countdown < 0) {
+            clearInterval(tick);
+            location.reload();
+          }
+        }, 1000);
+      } else {
+        btn.disabled = false;
+        alert('Restart failed: ' + d.error);
+      }
+    })
+    .catch(() => {
+      // Web service died — just wait and reload
+      msg.style.display = 'block';
+      let countdown = 15;
+      const tick = setInterval(() => {
+        msg.textContent = `Restarting... reloading in ${countdown}s`;
+        countdown--;
+        if (countdown < 0) { clearInterval(tick); location.reload(); }
+      }, 1000);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Settings — MowerBase{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+
+<section class="card">
+  <h2>Correction Source</h2>
+  <p style="color:#aaa; font-size:0.9rem;">
+    Choose where RTCM corrections come from. In either mode, the NTRIP server
+    broadcasts the stream on the local network.
+  </p>
+  <div class="btn-row" style="gap:0.5rem; margin-bottom:1rem;">
+    <button type="button" id="src-gps-btn" class="btn" onclick="setSource('gps')">
+      GPS Survey-In
+    </button>
+    <button type="button" id="src-ntrip-btn" class="btn" onclick="setSource('ntrip')">
+      NTRIP Relay
+    </button>
+  </div>
+  <div id="save-source-result" class="alert" style="display:none; margin-top:0.5rem;"></div>
+</section>
+
+<section class="card" id="svin-section">
+  <h2>Survey-In Settings</h2>
+  <div id="gps-not-found-warning" class="alert alert-warning" style="display:none;">
+    <strong>GPS HAT not detected.</strong>
+    Check that the LC29H(BS) HAT is seated on the GPIO header and the UART jumper is in Position B.
+    Survey-In is unavailable until the GPS HAT is connected.
+  </div>
+  <p style="color:#aaa; font-size:0.9rem;">
+    MowerBase averages its own GPS for the survey duration and locks to that position.
+    Absolute accuracy is ~1–3 m but relative accuracy (base to mower) is centimetre-level.
+  </p>
+  <form id="config-form">
+    <div class="form-group">
+      <label for="survey-duration">Minimum Survey Duration (seconds)</label>
+      <input type="number" id="survey-duration" name="survey_min_duration"
+             value="{{ config.survey.min_duration_seconds }}" min="30" max="600"
+             class="form-control">
+      <small style="color:#888;">Default: 60 s.</small>
+    </div>
+    <div class="form-group">
+      <label for="survey-accuracy">GPS Accuracy Limit (metres)</label>
+      <input type="number" id="survey-accuracy" name="survey_accuracy_limit"
+             value="{{ config.survey.accuracy_limit_m }}" min="0.5" max="10.0" step="0.5"
+             class="form-control">
+      <small style="color:#888;">Default: 2.0 m.</small>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+  <div id="save-result" class="alert" style="display:none; margin-top:1rem;"></div>
+</section>
+
+<section class="card" id="ntrip-client-section" style="display:none;">
+  <h2>NTRIP Client</h2>
+  <div id="ntrip-no-wifi-warning" class="alert alert-warning" style="display:none;">
+    <strong>Home WiFi required for NTRIP relay.</strong>
+    Go to <a href="/network">Network</a> to connect to your home WiFi.
+    You can save credentials below but NTRIP relay will not work until WiFi is connected.
+  </div>
+  <p style="color:#aaa; font-size:0.9rem;">
+    MowerBase connects to an external NTRIP caster and relays its corrections to
+    the mower via SiK radio and the local NTRIP server simultaneously.
+  </p>
+  <form id="ntrip-client-form">
+    <div class="form-group">
+      <label for="nc-host">Caster Host</label>
+      <input type="text" id="nc-host" class="form-control"
+             value="{{ config.get('ntrip_client', {}).get('host', '') }}"
+             placeholder="ntrip.data.gnss.ga.gov.au">
+    </div>
+    <div class="form-group">
+      <label for="nc-port">Port</label>
+      <input type="number" id="nc-port" class="form-control"
+             value="{{ config.get('ntrip_client', {}).get('port', 2101) }}"
+             placeholder="2101">
+    </div>
+    <div class="form-group">
+      <label for="nc-mountpoint">Mountpoint</label>
+      <input type="text" id="nc-mountpoint" class="form-control"
+             value="{{ config.get('ntrip_client', {}).get('mountpoint', '') }}"
+             placeholder="5MTB00AUS0">
+    </div>
+    <div class="form-group">
+      <label for="nc-username">Username</label>
+      <input type="text" id="nc-username" class="form-control" autocomplete="username"
+             value="{{ config.get('ntrip_client', {}).get('username', '') }}">
+    </div>
+    <div class="form-group">
+      <label for="nc-password">Password</label>
+      <input type="password" id="nc-password" class="form-control" autocomplete="current-password"
+             value="{{ config.get('ntrip_client', {}).get('password', '') }}">
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+  <div id="ntrip-client-result" class="alert" style="display:none; margin-top:1rem;"></div>
+</section>
+
+<section class="card">
+  <h2>NTRIP Server</h2>
+  <p style="color:#aaa; font-size:0.9rem;">
+    Broadcasts RTCM corrections on the local network so devices can connect via TCP.
+    MAVProxy: <code>--ntrip=mowerbase.local:{{ config.get('ntrip_server', {}).get('port', 2101) }}/{{ config.get('ntrip_server', {}).get('mountpoint', 'MOWERBASE') }}</code>
+  </p>
+  <form id="ntrip-server-form">
+    <div class="form-group" style="display:flex; align-items:center; gap:1rem;">
+      <label style="margin:0;">
+        <input type="checkbox" id="ns-enabled"
+               {% if config.get('ntrip_server', {}).get('enabled', True) %}checked{% endif %}>
+        Enabled
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="ns-port">TCP Port</label>
+      <input type="number" id="ns-port" class="form-control"
+             value="{{ config.get('ntrip_server', {}).get('port', 2101) }}"
+             placeholder="2101">
+    </div>
+    <div class="form-group">
+      <label for="ns-mountpoint">Mountpoint</label>
+      <input type="text" id="ns-mountpoint" class="form-control"
+             value="{{ config.get('ntrip_server', {}).get('mountpoint', 'MOWERBASE') }}"
+             placeholder="MOWERBASE">
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+  <div id="ntrip-server-result" class="alert" style="display:none; margin-top:1rem;"></div>
+</section>
+
+<section class="card">
+  <h2>SiK Radio</h2>
+  <p style="color:#aaa; font-size:0.9rem;">
+    USB port and baud rate for the SiK 915MHz radio that forwards RTCM corrections to the mower.
+  </p>
+  <form id="sik-form">
+    <div class="form-group">
+      <label for="sik-port">USB Port</label>
+      <input type="text" id="sik-port" value="{{ config.sik.port }}"
+             class="form-control" placeholder="/dev/ttyUSB0">
+    </div>
+    <div class="form-group">
+      <label for="sik-baud">Baud Rate</label>
+      <input type="number" id="sik-baud" value="{{ config.sik.baud }}"
+             class="form-control" placeholder="57600">
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save SiK Settings</button>
+    </div>
+  </form>
+  <div id="sik-save-result" class="alert" style="display:none; margin-top:1rem;"></div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Hardware state gates ──────────────────────────────────────────────────────
+let _serialOk = true;   // assume present until state loads
+let _wifiConnected = true;
+
+function applyHardwareGates() {
+  const gpsBtn = document.getElementById('src-gps-btn');
+  const svinSection = document.getElementById('svin-section');
+  const gpsWarn = document.getElementById('gps-not-found-warning');
+  const ntripWifiWarn = document.getElementById('ntrip-no-wifi-warning');
+
+  if (!_serialOk) {
+    if (gpsBtn) { gpsBtn.disabled = true; gpsBtn.title = 'GPS HAT not connected'; }
+    if (gpsWarn) gpsWarn.style.display = '';
+  } else {
+    if (gpsBtn) { gpsBtn.disabled = false; gpsBtn.title = ''; }
+    if (gpsWarn) gpsWarn.style.display = 'none';
+  }
+
+  if (!_wifiConnected && document.getElementById('ntrip-client-section').style.display !== 'none') {
+    if (ntripWifiWarn) ntripWifiWarn.style.display = '';
+  } else {
+    if (ntripWifiWarn) ntripWifiWarn.style.display = 'none';
+  }
+}
+
+// Poll state once to set initial hardware gate values
+fetch('/api/state')
+  .then(r => r.json())
+  .then(data => {
+    _serialOk = data.gps ? (data.gps.serial_ok !== false) : true;
+    _wifiConnected = data.wifi ? data.wifi.home_connected : true;
+    applyHardwareGates();
+  })
+  .catch(() => {});
+
+// ── Correction source toggle ──────────────────────────────────────────────────
+const currentSource = {{ config.get('correction_source', 'gps') | tojson }};
+applySourceUI(currentSource);
+
+function applySourceUI(src) {
+  document.getElementById('src-gps-btn').className   = 'btn' + (src === 'gps'   ? ' btn-primary' : ' btn-secondary');
+  document.getElementById('src-ntrip-btn').className = 'btn' + (src === 'ntrip' ? ' btn-primary' : ' btn-secondary');
+  document.getElementById('svin-section').style.display          = src === 'gps'   ? '' : 'none';
+  document.getElementById('ntrip-client-section').style.display  = src === 'ntrip' ? '' : 'none';
+  applyHardwareGates();
+}
+
+function setSource(src) {
+  if (src === 'gps' && !_serialOk) {
+    const resultEl = document.getElementById('save-source-result');
+    resultEl.style.display = 'block';
+    resultEl.className = 'alert alert-warning';
+    resultEl.textContent = 'GPS HAT not detected. Connect the LC29H(BS) HAT first.';
+    return;
+  }
+  const resultEl = document.getElementById('save-source-result');
+  resultEl.style.display = 'none';
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({correction_source: src})
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        applySourceUI(src);
+      } else {
+        resultEl.style.display = 'block';
+        resultEl.className = 'alert alert-error';
+        resultEl.textContent = 'Save failed: ' + (data.error || 'Unknown error');
+      }
+    });
+}
+
+// ── Survey-In settings ────────────────────────────────────────────────────────
+document.getElementById('config-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const resultEl = document.getElementById('save-result');
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({survey: {
+      min_duration_seconds: parseInt(document.getElementById('survey-duration').value),
+      accuracy_limit_m: parseFloat(document.getElementById('survey-accuracy').value),
+    }})
+  })
+    .then(r => r.json())
+    .then(data => {
+      resultEl.style.display = 'block';
+      resultEl.className = data.ok ? 'alert alert-success' : 'alert alert-error';
+      resultEl.textContent = data.ok ? 'Saved.' : 'Save failed: ' + (data.error || '');
+    });
+});
+
+// ── NTRIP client settings ─────────────────────────────────────────────────────
+document.getElementById('ntrip-client-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const resultEl = document.getElementById('ntrip-client-result');
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ntrip_client: {
+      host:       document.getElementById('nc-host').value.trim(),
+      port:       parseInt(document.getElementById('nc-port').value),
+      mountpoint: document.getElementById('nc-mountpoint').value.trim(),
+      username:   document.getElementById('nc-username').value,
+      password:   document.getElementById('nc-password').value,
+    }})
+  })
+    .then(r => r.json())
+    .then(data => {
+      resultEl.style.display = 'block';
+      resultEl.className = data.ok ? 'alert alert-success' : 'alert alert-error';
+      resultEl.textContent = data.ok ? 'NTRIP client settings saved.' : 'Save failed: ' + (data.error || '');
+    });
+});
+
+// ── NTRIP server settings ─────────────────────────────────────────────────────
+document.getElementById('ntrip-server-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const resultEl = document.getElementById('ntrip-server-result');
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ntrip_server: {
+      enabled:    document.getElementById('ns-enabled').checked,
+      port:       parseInt(document.getElementById('ns-port').value),
+      mountpoint: document.getElementById('ns-mountpoint').value.trim(),
+    }})
+  })
+    .then(r => r.json())
+    .then(data => {
+      resultEl.style.display = 'block';
+      resultEl.className = data.ok ? 'alert alert-success' : 'alert alert-error';
+      resultEl.textContent = data.ok ? 'NTRIP server settings saved. Restart ntrip service to apply.' : 'Save failed: ' + (data.error || '');
+    });
+});
+
+// ── SiK radio settings ────────────────────────────────────────────────────────
+document.getElementById('sik-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const resultEl = document.getElementById('sik-save-result');
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({sik: {
+      port: document.getElementById('sik-port').value.trim(),
+      baud: parseInt(document.getElementById('sik-baud').value),
+    }})
+  })
+    .then(r => r.json())
+    .then(data => {
+      resultEl.style.display = 'block';
+      resultEl.className = data.ok ? 'alert alert-success' : 'alert alert-error';
+      resultEl.textContent = data.ok ? 'SiK settings saved. Restart sik service to apply.' : 'Save failed: ' + (data.error || '');
+    });
+});
+</script>
+{% endblock %}

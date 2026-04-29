@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MowerBase{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="logo">MowerBase</span>
+      <nav>
+        <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
+        <a href="/config" {% if request.path == '/config' %}class="active"{% endif %}>Config</a>
+        <a href="/position" {% if request.path == '/position' %}class="active"{% endif %}>Position</a>
+        <a href="/network" {% if request.path == '/network' %}class="active"{% endif %}>Network</a>
+        <a href="/rtcm" {% if request.path == '/rtcm' %}class="active"{% endif %}>RTCM</a>
+        <a href="/logs" {% if request.path == '/logs' %}class="active"{% endif %}>Logs</a>
+        <a href="/swagger" {% if request.path == '/swagger' %}class="active"{% endif %}>API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <small>MowerBase RTK Base Station &mdash; <span id="uptime-display"></span></small>
+  </footer>
+
+  <script>
+    // Update uptime display
+    function updateUptime() {
+      fetch('/api/state')
+        .then(r => r.json())
+        .then(data => {
+          const el = document.getElementById('uptime-display');
+          if (el && data.system_uptime_s) {
+            const s = data.system_uptime_s;
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            el.textContent = `Uptime: ${h}h ${m}m`;
+          }
+        })
+        .catch(() => {});
+    }
+    setInterval(updateUptime, 30000);
+    updateUptime();
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

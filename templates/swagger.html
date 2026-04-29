@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Docs — MowerBase</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    /* ── Minimal wrapper so Swagger UI gets full vertical space ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+    }
+
+    /* ── Slim top bar matching MowerBase nav ── */
+    .topbar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .topbar .logo {
+      color: #4ecdc4;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+    }
+    .topbar nav {
+      display: flex;
+      gap: 0.25rem;
+    }
+    .topbar nav a {
+      color: #8b949e;
+      text-decoration: none;
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    .topbar nav a:hover { background: #21262d; color: #c9d1d9; }
+    .topbar nav a.active { background: #21262d; color: #58a6ff; }
+
+    /* ── Swagger UI container ── */
+    #swagger-ui {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* ── Dark-ish override for Swagger UI ── */
+    .swagger-ui .topbar { display: none; }   /* hide Swagger's own topbar */
+
+    .swagger-ui .info .title        { color: #c9d1d9; }
+    .swagger-ui .info p,
+    .swagger-ui .info li            { color: #8b949e; }
+    .swagger-ui .scheme-container   { background: #161b22; box-shadow: none; padding: 0.5rem 1rem; border-radius: 6px; }
+    .swagger-ui .opblock-tag        { border-bottom: 1px solid #30363d; }
+    .swagger-ui .opblock-tag:hover  { background: #161b22; }
+    .swagger-ui section.models      { border: 1px solid #30363d; }
+
+    /* Fix Swagger UI white background flashes */
+    .swagger-ui .wrapper { padding: 0; }
+    .swagger-ui .information-container { background: #161b22; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Slim nav matching MowerBase theme ── -->
+  <div class="topbar">
+    <a href="/" class="logo">MowerBase</a>
+    <nav>
+      <a href="/">Dashboard</a>
+      <a href="/config">Config</a>
+      <a href="/position">Position</a>
+      <a href="/network">Network</a>
+      <a href="/rtcm">RTCM</a>
+      <a href="/logs">Logs</a>
+      <a href="/swagger" class="active">API</a>
+    </nav>
+  </div>
+
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({
+      url: '/api/openapi.json',
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset,
+      ],
+      layout: 'BaseLayout',
+      deepLinking: true,
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 2,
+      displayRequestDuration: true,
+      tryItOutEnabled: true,
+      requestSnippetsEnabled: true,
+    });
+  </script>
+</body>
+</html>

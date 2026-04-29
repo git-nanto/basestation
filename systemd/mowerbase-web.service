@@ -1,0 +1,26 @@
+[Unit]
+Description=MowerBase Web Service — Flask dashboard + OLED + LED
+Documentation=https://github.com/yourusername/mowerbase
+After=mowerbase-gps.service network.target
+# Web service is independent of ntrip/sik — always runs even if NTRIP is unavailable.
+
+[Service]
+Type=simple
+User=mowerbase
+Group=mowerbase
+
+LogsDirectory=mowerbase
+LogsDirectoryMode=0755
+
+ExecStart=authbind --deep /opt/mowerbase/venv/bin/python /opt/mowerbase/web.py
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Allow GPIO access for LED and button
+SupplementaryGroups=gpio
+
+[Install]
+WantedBy=multi-user.target

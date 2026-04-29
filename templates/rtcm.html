@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}RTCM — MowerBase{% endblock %}
+
+{% block extra_head %}
+<style>
+  .rtcm-counts {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+  .count-cell {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .count-cell .msg-type {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+  .count-cell .msg-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    line-height: 1.2;
+    margin: 0.15rem 0;
+  }
+  .count-cell.active   { border-color: var(--green); }
+  .count-cell.active   .msg-count { color: var(--green); }
+  .count-cell.inactive .msg-count { color: var(--red); }
+
+  .health-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid;
+  }
+  .health-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .health-ok   { background: #1a4731; border-color: var(--green); color: var(--green); }
+  .health-ok   .health-dot { background: var(--green); }
+  .health-warn { background: #3d2e0a; border-color: var(--yellow); color: var(--yellow); }
+  .health-warn .health-dot { background: var(--yellow); }
+  .health-bad  { background: #3d1015; border-color: var(--red); color: var(--red); }
+  .health-bad  .health-dot { background: var(--red); }
+
+  .frames-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+  .frames-table th {
+    text-align: left;
+    padding: 0.35rem 0.6rem;
+    color: var(--text-dim);
+    font-weight: normal;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .frames-table td {
+    padding: 0.2rem 0.6rem;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .frames-table tr:last-child td { border-bottom: none; }
+  .type-1005  { color: var(--cyan); }
+  .type-msm4  { color: var(--accent); }
+  .type-other { color: var(--text-dim); }
+
+  @media (max-width: 500px) {
+    .rtcm-counts { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>RTCM Verification</h1>
+
+<!-- ── Health banner ─────────────────────────────────────────────── -->
+<div id="health-banner" class="health-banner health-bad">
+  <div id="health-dot" class="health-dot"></div>
+  <span id="health-text">Loading...</span>
+</div>
+
+<!-- ── Output rate ───────────────────────────────────────────────── -->
+<section class="card">
+  <h2>Output Rate</h2>
+  <table class="status-table">
+    <tr>
+      <td>Bytes / sec</td>
+      <td><strong id="bytes-per-sec">---</strong></td>
+    </tr>
+    <tr>
+      <td>Frames / sec</td>
+      <td><strong id="frame-rate">---</strong></td>
+    </tr>
+    <tr>
+      <td>Last RTCM 1005</td>
+      <td><span id="last-1005">---</span></td>
+    </tr>
+  </table>
+</section>
+
+<!-- ── Per-type counts (10s window) ─────────────────────────────── -->
+<section class="card">
+  <h2>Message Counts
+    <span style="font-size:0.8rem; font-weight:normal; color:var(--text-dim);">
+      (last 10 seconds)
+    </span>
+  </h2>
+  <div class="rtcm-counts">
+    <div class="count-cell inactive" id="cell-1005">
+      <div class="msg-type">1005</div>
+      <div class="msg-count" id="cnt-1005">0</div>
+      <div class="msg-type">Base ARP</div>
+    </div>
+    <div class="count-cell inactive" id="cell-1074">
+      <div class="msg-type">1074</div>
+      <div class="msg-count" id="cnt-1074">0</div>
+      <div class="msg-type">GPS MSM4</div>
+    </div>
+    <div class="count-cell inactive" id="cell-1084">
+      <div class="msg-type">1084</div>
+      <div class="msg-count" id="cnt-1084">0</div>
+      <div class="msg-type">GLO MSM4</div>
+    </div>
+    <div class="count-cell inactive" id="cell-1094">
+      <div class="msg-type">1094</div>
+      <div class="msg-count" id="cnt-1094">0</div>
+      <div class="msg-type">GAL MSM4</div>
+    </div>
+    <div class="count-cell inactive" id="cell-1124">
+      <div class="msg-type">1124</div>
+      <div class="msg-count" id="cnt-1124">0</div>
+      <div class="msg-type">BDS MSM4</div>
+    </div>
+  </div>
+  <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.25rem;">
+    All 5 types should be active in FIXED mode. RTCM 1005 only appears after
+    Survey-In completes and the module self-declares Fixed mode.
+  </p>
+</section>
+
+<!-- ── Recent frames ────────────────────────────────────────────── -->
+<section class="card">
+  <h2>Recent Frames
+    <span style="font-size:0.8rem; font-weight:normal; color:var(--text-dim);">
+      (last 20, newest first)
+    </span>
+  </h2>
+  <div style="overflow-x:auto;">
+    <table class="frames-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Bytes</th>
+        </tr>
+      </thead>
+      <tbody id="frames-tbody">
+        <tr>
+          <td colspan="4" style="color:var(--text-dim); padding:0.75rem;">
+            Waiting for RTCM data...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const MSG_DESC = {
+  1005: 'Base Station ARP',
+  1074: 'GPS MSM4',
+  1084: 'GLONASS MSM4',
+  1094: 'Galileo MSM4',
+  1114: 'QZSS MSM4',
+  1124: 'BeiDou MSM4',
+};
+
+const EXPECTED_TYPES = [1005, 1074, 1084, 1094, 1124];
+
+function fmtAge(ts) {
+  if (!ts) return '---';
+  const age = Math.round(Date.now() / 1000 - ts);
+  const d = new Date(ts * 1000);
+  const hms = d.toLocaleTimeString('en-US', {hour12: false});
+  if (age < 60)  return `${hms} (${age}s ago)`;
+  if (age < 3600) return `${hms} (${Math.round(age / 60)}m ago)`;
+  return `${hms} (${Math.round(age / 3600)}h ago)`;
+}
+
+function fmtTime(ts) {
+  if (!ts) return '---';
+  const d = new Date(ts * 1000);
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  const ms = String(Math.floor(d.getMilliseconds() / 100));
+  return `${h}:${m}:${s}.${ms}`;
+}
+
+function typeClass(t) {
+  if (t === 1005) return 'type-1005';
+  if ([1074, 1084, 1094, 1114, 1124].includes(t)) return 'type-msm4';
+  return 'type-other';
+}
+
+function updateRtcm(data) {
+  const r = data.rtcm || {};
+  const counts = r.counts_10s || {};
+  const sm = (data.gps || {}).sm_state || 'BOOT';
+
+  // ── Output rate ──────────────────────────────────────────────
+  document.getElementById('bytes-per-sec').textContent =
+    r.bytes_per_sec != null ? r.bytes_per_sec + ' B/s' : '---';
+  document.getElementById('frame-rate').textContent =
+    r.frame_rate != null ? r.frame_rate.toFixed(1) + ' fps' : '---';
+  document.getElementById('last-1005').textContent = fmtAge(r.last_1005_ts);
+
+  // ── Per-type counts ──────────────────────────────────────────
+  EXPECTED_TYPES.forEach(t => {
+    const cnt = counts[String(t)] || 0;
+    document.getElementById('cnt-' + t).textContent = cnt;
+    const cell = document.getElementById('cell-' + t);
+    cell.className = 'count-cell ' + (cnt > 0 ? 'active' : 'inactive');
+  });
+
+  // ── Health banner ────────────────────────────────────────────
+  const banner = document.getElementById('health-banner');
+  const healthText = document.getElementById('health-text');
+
+  if (!r.bytes_per_sec || r.bytes_per_sec === 0) {
+    banner.className = 'health-banner health-bad';
+    healthText.textContent = 'No RTCM data flowing — check GPS serial connection';
+  } else if (sm === 'SURVEYING') {
+    const msmActive = [1074, 1084, 1094, 1124].some(t => (counts[String(t)] || 0) > 0);
+    if (msmActive) {
+      banner.className = 'health-banner health-ok';
+      healthText.textContent = 'Survey-In in progress — satellite observations flowing';
+    } else {
+      banner.className = 'health-banner health-warn';
+      healthText.textContent = 'Survey-In: waiting for satellite observations (check sky view)';
+    }
+  } else if (sm === 'FIXED') {
+    const missing = EXPECTED_TYPES.filter(t => (counts[String(t)] || 0) === 0);
+    if (missing.length === 0) {
+      banner.className = 'health-banner health-ok';
+      healthText.textContent = 'All RTCM message types flowing — corrections healthy';
+    } else if (missing.length <= 2) {
+      banner.className = 'health-banner health-warn';
+      healthText.textContent = 'Missing types: ' + missing.join(', ') + ' (partial sky visibility)';
+    } else {
+      banner.className = 'health-banner health-bad';
+      healthText.textContent = 'Most types missing (' + missing.join(', ') + ') — check antenna';
+    }
+  } else {
+    banner.className = 'health-banner health-warn';
+    healthText.textContent = 'State: ' + sm + ' — ' + r.bytes_per_sec + ' B/s flowing';
+  }
+
+  // ── Recent frames table (newest first) ───────────────────────
+  const frames = (r.recent_frames || []).slice().reverse();
+  const tbody = document.getElementById('frames-tbody');
+
+  if (frames.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="4" style="color:var(--text-dim);padding:0.75rem;">No frames received yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = frames.map(f => {
+    const cls  = typeClass(f.type);
+    const desc = MSG_DESC[f.type] || ('Unknown type ' + f.type);
+    return `<tr>
+      <td>${fmtTime(f.ts)}</td>
+      <td class="${cls}">${f.type}</td>
+      <td>${desc}</td>
+      <td>${f.len}</td>
+    </tr>`;
+  }).join('');
+}
+
+function poll() {
+  fetch('/api/state').then(r => r.json()).then(updateRtcm).catch(() => {});
+}
+poll();
+setInterval(poll, 2000);
+</script>
+{% endblock %}
