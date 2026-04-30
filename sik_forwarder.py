@@ -75,6 +75,7 @@ class SikForwarder:
         self._radio_connected = connected
         state.update_state({
             "sik": {
+                "usb_present": os.path.exists(self.sik_port),
                 "connected": connected,
                 "port": self.sik_port,
                 "bytes_total": self._bytes_total,

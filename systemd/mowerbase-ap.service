@@ -1,0 +1,16 @@
+[Unit]
+Description=MowerBase WiFi AP Manager — fallback AP when home WiFi unavailable
+After=NetworkManager.service network.target
+Wants=NetworkManager.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/mowerbase/ap_manager.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

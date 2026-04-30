@@ -226,6 +226,7 @@ SERVICES=(
   mowerbase-sik.service
   mowerbase-ntrip.service
   mowerbase-web.service
+  mowerbase-ap.service
 )
 
 for svc in "${SERVICES[@]}"; do
@@ -277,12 +278,14 @@ else
     wifi.mode ap \
     ipv4.method shared \
     ipv4.addresses "10.42.0.1/24" \
-    connection.autoconnect yes \
-    connection.autoconnect-priority 5
-  success "AP profile 'mowerbase-ap' created (open, 10.42.0.1)"
+    connection.autoconnect no
+  success "AP profile 'mowerbase-ap' created (open, 10.42.0.1, managed by mowerbase-ap.service)"
 fi
 
-nmcli con up mowerbase-ap 2>/dev/null || warn "Could not start AP now (will start on next boot/NetworkManager restart)"
+# Copy and install the AP manager script
+cp "$SCRIPT_DIR/ap_manager.sh" "$APP_DIR/"
+chmod +x "$APP_DIR/ap_manager.sh"
+chown root:root "$APP_DIR/ap_manager.sh"
 
 # ── 11. Enable services ────────────────────────────────────────────────────────
 info "Step 11/13: Enabling services..."

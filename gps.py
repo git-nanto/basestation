@@ -787,7 +787,7 @@ class GpsService:
             "frame_rate": round(len(self._rtcm_frame_buf) / 10.0, 1),
             "recent_frames": list(self._rtcm_recent_frames),
         }
-        state.update_state({"gps": s, "rtcm": rtcm_s})
+        state.update_state({"gps": s, "rtcm": rtcm_s, "correction_source": self._correction_source})
 
     def _drift_monitor_thread(self) -> None:
         """Background thread: monitor position drift every 5 minutes."""

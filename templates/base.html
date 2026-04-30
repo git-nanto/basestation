@@ -14,7 +14,7 @@
       <nav>
         <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
         <a href="/config" {% if request.path == '/config' %}class="active"{% endif %}>Config</a>
-        <a href="/position" {% if request.path == '/position' %}class="active"{% endif %}>Position</a>
+        <a href="/position" {% if request.path == '/position' %}class="active"{% endif %} id="nav-position">Position</a>
         <a href="/network" {% if request.path == '/network' %}class="active"{% endif %}>Network</a>
         <a href="/rtcm" {% if request.path == '/rtcm' %}class="active"{% endif %}>RTCM</a>
         <a href="/logs" {% if request.path == '/logs' %}class="active"{% endif %}>Logs</a>
@@ -32,7 +32,7 @@
   </footer>
 
   <script>
-    // Update uptime display
+    // Update uptime display + nav state indicators
     function updateUptime() {
       fetch('/api/state')
         .then(r => r.json())
@@ -43,6 +43,22 @@
             const h = Math.floor(s / 3600);
             const m = Math.floor((s % 3600) / 60);
             el.textContent = `Uptime: ${h}h ${m}m`;
+          }
+          // Dim Position nav link when GPS HAT not detected or NTRIP relay active
+          const posLink = document.getElementById('nav-position');
+          if (posLink) {
+            const serialOk = data.gps ? data.gps.serial_ok !== false : true;
+            const isNtrip = data.correction_source === 'ntrip';
+            if (!serialOk) {
+              posLink.style.opacity = '0.45';
+              posLink.title = 'GPS HAT not detected — stored position may still be available';
+            } else if (isNtrip) {
+              posLink.style.opacity = '0.45';
+              posLink.title = 'NTRIP relay mode — position management not applicable';
+            } else {
+              posLink.style.opacity = '';
+              posLink.title = '';
+            }
           }
         })
         .catch(() => {});

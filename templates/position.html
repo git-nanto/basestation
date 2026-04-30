@@ -36,6 +36,22 @@
 {% block content %}
 <h1>Position Management</h1>
 
+<!-- GPS-not-found banner — shown/hidden by JS -->
+<div id="pos-gps-warning" class="alert alert-warning" style="display:none; margin-bottom:1rem;">
+  <strong>GPS HAT not detected.</strong>
+  Live GPS data is unavailable. If a position was previously surveyed it is shown below.
+  Re-Survey is disabled until the GPS HAT is connected.
+</div>
+
+{% if config.get('correction_source', 'gps') == 'ntrip' %}
+<div class="alert alert-warning" style="margin-bottom:1rem;">
+  <strong>Information on this page may not be correct.</strong>
+  Position management is only valid when using GPS Survey-In mode. In NTRIP relay mode,
+  corrections come from an external caster and the local Survey-In, stored position, and
+  drift monitoring are not used. Go to <a href="/config">Settings</a> to switch to GPS Survey-In mode.
+</div>
+{% endif %}
+
 <!-- ── GPS Status ──────────────────────────────────────────── -->
 <section class="card">
   <h2>GPS Status <span id="live-fix-pill" class="fix-pill boot">...</span></h2>
@@ -271,9 +287,21 @@ function updateLive(data) {
       (g.drift_current_m * 1000).toFixed(1) + ' mm';
   }
 
-  // Re-survey button — only enabled in FIXED state
+  // GPS-not-found banner + re-survey gate
+  const serialOk = g.serial_ok !== false;
+  const isNtrip = data.correction_source === 'ntrip';
+  const gpsWarn = document.getElementById('pos-gps-warning');
+  if (gpsWarn) gpsWarn.style.display = serialOk ? 'none' : '';
+
+  // Re-survey button — only enabled in FIXED state, GPS present, and GPS mode
   const resurveyBtn = document.getElementById('resurvey-btn');
-  if (sm === 'FIXED') {
+  if (isNtrip) {
+    resurveyBtn.disabled = true;
+    resurveyBtn.textContent = 'Re-Survey (not used in NTRIP relay mode)';
+  } else if (!serialOk) {
+    resurveyBtn.disabled = true;
+    resurveyBtn.textContent = 'Re-Survey (GPS HAT not detected)';
+  } else if (sm === 'FIXED') {
     resurveyBtn.disabled = false;
     resurveyBtn.textContent = 'Start Re-Survey';
   } else if (sm === 'SURVEYING') {

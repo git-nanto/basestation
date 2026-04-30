@@ -200,14 +200,26 @@ NTRIP relay requires a home WiFi connection (the device needs internet access to
 - Or connect to the **MowerBase** AP and go to `http://10.42.0.1`
 - mDNS (`mowerbase.local`) requires `avahi-daemon` — should be running after install
 
-### SiK radio not transmitting
+### SiK radio status meanings
 
-**Symptom:** Dashboard shows SiK status **NC** (not connected).
+| Dashboard status | Meaning |
+|---|---|
+| **Not on USB** | USB device not found at configured port (`/dev/ttyUSB0`). Check cable and OTG adapter. |
+| **Found, idle (0.0 KB/s)** | Radio is connected and the port is open, but no RTCM data is flowing. GPS may not be in FIXED state yet, or correction source is NTRIP relay and not connected. |
+| **Active (X KB/s)** | Radio is transmitting RTCM corrections. Whether the remote end is receiving depends on RF conditions. |
 
-**Fix:**
+**If status is "Not on USB":**
 - Check the micro-USB OTG adapter and USB cable between Pi and SiK radio
 - Verify the port in **Settings → SiK Radio** matches your device (default `/dev/ttyUSB0`)
 - Check the **Logs → sik** tab for connection errors
+
+**If status is "Found, idle":**
+- Wait for GPS Survey-In to complete (status must reach FIXED before RTCM flows)
+- If using NTRIP relay mode, check the NTRIP client is connected to the caster
+
+### Position tab with no GPS
+
+The Position tab remains accessible when GPS is not connected because it can still show a **stored position** from a previous survey session, plus the drift history chart. A warning banner is shown at the top and the Re-Survey button is disabled until the GPS HAT is reconnected.
 
 ---
 

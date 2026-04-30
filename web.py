@@ -424,9 +424,31 @@ def api_openapi():
                             "content": {"application/json": {"schema": {
                                 "type": "object",
                                 "properties": {
-                                    "gps": {"type": "object", "description": "GPS / survey state"},
-                                    "rtcm": {"type": "object", "description": "RTCM message stats"},
-                                    "sik": {"type": "object", "description": "SiK radio status"},
+                                    "gps": {
+                                        "type": "object",
+                                        "description": "GPS / survey state",
+                                        "properties": {
+                                            "sm_state":    {"type": "string", "enum": ["BOOT", "SURVEYING", "FIXED", "RESURVEY_PENDING", "ERROR", "GPS_NOT_FOUND"]},
+                                            "serial_ok":   {"type": "boolean", "description": "True once /dev/ttyAMA0 opens; False (and sm_state=GPS_NOT_FOUND) after 5 failed retries"},
+                                            "lat":         {"type": "number", "nullable": True},
+                                            "lon":         {"type": "number", "nullable": True},
+                                            "alt_m":       {"type": "number", "nullable": True},
+                                            "num_sats":    {"type": "integer"},
+                                            "accuracy_m":  {"type": "number", "nullable": True},
+                                            "drift_current_m": {"type": "number"},
+                                            "drift_alert": {"type": "boolean"},
+                                        },
+                                    },
+                                    "wifi": {
+                                        "type": "object",
+                                        "description": "Home WiFi connection state (updated every ~6 s)",
+                                        "properties": {
+                                            "home_connected": {"type": "boolean", "description": "True when connected to a home WiFi network (not the MowerBase AP)"},
+                                            "ssid":           {"type": "string",  "description": "SSID of connected home network, or empty string"},
+                                        },
+                                    },
+                                    "rtcm": {"type": "object", "description": "RTCM message stats (counts_10s, bytes_per_sec, frame_rate, last_1005_ts, recent_frames)"},
+                                    "sik":  {"type": "object", "description": "SiK radio status (connected, bytes_per_sec, error)"},
                                     "_timestamp": {"type": "string"},
                                 },
                             }}},
@@ -456,7 +478,7 @@ def api_openapi():
                             "content": {"application/json": {"schema": {
                                 "type": "object",
                                 "properties": {
-                                    "sm_state":         {"type": "string", "enum": ["BOOT", "SURVEYING", "FIXED", "RESURVEY_PENDING", "ERROR"]},
+                                    "sm_state":         {"type": "string", "enum": ["BOOT", "SURVEYING", "FIXED", "RESURVEY_PENDING", "ERROR", "GPS_NOT_FOUND"]},
                                     "is_surveying":     {"type": "boolean"},
                                     "is_fixed":         {"type": "boolean"},
                                     "elapsed_s":        {"type": "integer", "description": "Seconds since survey started"},

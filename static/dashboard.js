@@ -149,13 +149,20 @@ function updateDashboard(state) {
     driftAlertEl.style.display = gps.drift_alert ? 'inline-block' : 'none';
   }
 
-  // SiK radio status
-  if (sik.connected) {
-    setBadge('sik-status', 'OK', 'badge-ok');
-    setText('sik-rate', formatKBps(sik.bytes_per_sec));
+  // SiK radio status — three distinct states
+  const sikRate = document.getElementById('sik-rate');
+  if (!sik.usb_present) {
+    setBadge('sik-status', 'Not on USB', 'badge-error');
+    if (sikRate) { sikRate.textContent = '---'; sikRate.title = `Port: ${sik.port || '/dev/ttyUSB0'}`; }
+  } else if (!sik.connected) {
+    setBadge('sik-status', 'Found, not open', 'badge-warning');
+    if (sikRate) { sikRate.textContent = '0.0 KB/s'; sikRate.title = sik.error || ''; }
+  } else if ((sik.bytes_per_sec || 0) < 0.1) {
+    setBadge('sik-status', 'Found, idle', 'badge-warning');
+    if (sikRate) { sikRate.textContent = '0.0 KB/s'; sikRate.title = 'No RTCM data flowing — GPS may not be fixed yet'; }
   } else {
-    setBadge('sik-status', sik.error ? 'ERR' : 'NC', sik.error ? 'badge-error' : 'badge-nc');
-    setText('sik-rate', '---');
+    setBadge('sik-status', 'Active', 'badge-ok');
+    if (sikRate) { sikRate.textContent = formatKBps(sik.bytes_per_sec); sikRate.title = ''; }
   }
 
   // GPS info

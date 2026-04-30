@@ -27,10 +27,15 @@ warn() { echo -e "${YELLOW}!${NC} $*"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# ── 1. Copy Python files directly to app dir (mowerbase owns /opt/mowerbase) ──
+# ── 1. Copy Python files + shell scripts ─────────────────────────────────────
 step "Copying Python files..."
 scp *.py "${PI}:${APP}/"
 ok "Python files copied"
+
+step "Copying shell scripts..."
+scp ap_manager.sh "${PI}:${APP}/"
+ssh "${PI}" "chmod +x ${APP}/ap_manager.sh"
+ok "Shell scripts copied"
 
 # ── 2. Copy templates ─────────────────────────────────────────────────────────
 step "Copying templates..."
@@ -51,7 +56,9 @@ ssh "${PI}" "
   sudo cp /tmp/mb-svc/mowerbase-sik.service /etc/systemd/system/mowerbase-sik.service &&
   sudo cp /tmp/mb-svc/mowerbase-ntrip.service /etc/systemd/system/mowerbase-ntrip.service &&
   sudo cp /tmp/mb-svc/mowerbase-web.service /etc/systemd/system/mowerbase-web.service &&
-  sudo systemctl daemon-reload
+  sudo cp /tmp/mb-svc/mowerbase-ap.service /etc/systemd/system/mowerbase-ap.service &&
+  sudo systemctl daemon-reload &&
+  sudo systemctl enable mowerbase-ap
 "
 ok "Service files installed"
 
@@ -71,7 +78,7 @@ else:
 
 # ── 6. Restart services ───────────────────────────────────────────────────────
 step "Restarting services..."
-ssh "${PI}" "sudo systemctl restart mowerbase-gps mowerbase-sik mowerbase-ntrip mowerbase-web"
+ssh "${PI}" "sudo systemctl restart mowerbase-gps mowerbase-sik mowerbase-ntrip mowerbase-web mowerbase-ap"
 ok "Services restarted"
 
 echo ""
