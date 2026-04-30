@@ -252,6 +252,21 @@ The Pi runs a fallback WiFi AP (**BaseStation**, open, no password) via `ap_mana
 
 ---
 
+## Compatibility
+
+Tested on **Raspberry Pi Zero W v1**. Should work on Pi 3B, 4B, and 5 with these differences:
+
+| | Pi Zero W v1 | Pi 3B | Pi 4B / 5 |
+|---|---|---|---|
+| OS | 32-bit Bookworm only (ARMv6) | 32 or 64-bit | 32 or 64-bit |
+| SiK radio USB | Needs micro-USB OTG adapter | Standard USB-A | Standard USB-A |
+| WiFi AP | Fallback only (BCM43430 limit) | Fallback only (same chip) | May support concurrent AP+STA |
+| First install time | 10–15 min (no pre-built wheels) | ~2 min | ~1 min |
+
+`dtoverlay=disable-bt` and the serial UART setup are required on all models.
+
+---
+
 ## File layout
 
 ```
