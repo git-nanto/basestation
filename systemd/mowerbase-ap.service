@@ -1,5 +1,5 @@
 [Unit]
-Description=MowerBase WiFi AP Manager — fallback AP when home WiFi unavailable
+Description=BaseStation WiFi AP Manager — fallback AP when home WiFi unavailable
 After=NetworkManager.service network.target
 Wants=NetworkManager.service
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Settings — MowerBase{% endblock %}
+{% block title %}Settings — BaseStation{% endblock %}
 
 {% block content %}
 <h1>Settings</h1>
@@ -29,7 +29,7 @@
     Survey-In is unavailable until the GPS HAT is connected.
   </div>
   <p style="color:#aaa; font-size:0.9rem;">
-    MowerBase averages its own GPS for the survey duration and locks to that position.
+    BaseStation averages its own GPS for the survey duration and locks to that position.
     Absolute accuracy is ~1–3 m but relative accuracy (base to mower) is centimetre-level.
   </p>
   <form id="config-form">
@@ -62,7 +62,7 @@
     You can save credentials below but NTRIP relay will not work until WiFi is connected.
   </div>
   <p style="color:#aaa; font-size:0.9rem;">
-    MowerBase connects to an external NTRIP caster and relays its corrections to
+    BaseStation connects to an external NTRIP caster and relays its corrections to
     the mower via SiK radio and the local NTRIP server simultaneously.
   </p>
   <form id="ntrip-client-form">

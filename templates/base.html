@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}MowerBase{% endblock %}</title>
+  <title>{% block title %}BaseStation{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header>
     <div class="header-inner">
-      <span class="logo">MowerBase</span>
+      <span class="logo">BaseStation</span>
       <nav>
         <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
         <a href="/config" {% if request.path == '/config' %}class="active"{% endif %}>Config</a>
@@ -28,7 +28,7 @@
   </main>
 
   <footer>
-    <small>MowerBase RTK Base Station &mdash; <span id="uptime-display"></span></small>
+    <small>BaseStation RTK Base Station &mdash; <span id="uptime-display"></span></small>
   </footer>
 
   <script>

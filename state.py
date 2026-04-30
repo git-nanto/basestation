@@ -1,5 +1,5 @@
 """
-state.py — Shared state.json read/write helpers for MowerBase services.
+state.py — Shared state.json read/write helpers for BaseStation services.
 
 All services read and write /run/mowerbase/state.json.
 Uses fcntl file locking to prevent concurrent write corruption.

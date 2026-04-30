@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Network — MowerBase{% endblock %}
+{% block title %}Network — BaseStation{% endblock %}
 
 {% block content %}
 <h1>Network</h1>
 
 <section class="card">
-  <h2>MowerBase Hotspot</h2>
+  <h2>BaseStation Hotspot</h2>
   <p style="color:#aaa; font-size:0.9rem;">
-    The MowerBase always broadcasts its own open WiFi network so you can reach the web UI
-    even when no home WiFi is available.
+    BaseStation broadcasts its own open WiFi network when no home WiFi is connected,
+    so you can always reach the web UI. While home WiFi is active this AP is inactive.
   </p>
   {% if ap_status and ap_status.active %}
   <div class="alert alert-success">

@@ -1,5 +1,5 @@
 """
-led.py — Single-colour GPIO LED controller for MowerBase.
+led.py — Single-colour GPIO LED controller for BaseStation.
 
 LED on GPIO 17 (configurable). States encoded via blink patterns.
 All blinking is non-blocking via a background thread.

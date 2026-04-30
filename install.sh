@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — MowerBase one-shot install script
+# install.sh — BaseStation one-shot install script
 #
 # Designed for Raspberry Pi Zero W v1 running Raspberry Pi OS Lite 32-bit Bookworm.
 #
@@ -264,7 +264,7 @@ chown mowerbase /etc/authbind/byport/80
 success "authbind configured for port 80"
 
 # ── 10b. Persistent concurrent AP — NetworkManager profile ───────────────────
-info "Setting up always-on MowerBase WiFi AP (concurrent AP+STA)..."
+info "Setting up always-on BaseStation WiFi AP (concurrent AP+STA)..."
 
 # Disable system dnsmasq so NM can run its own for AP DHCP
 systemctl disable dnsmasq 2>/dev/null || true
@@ -274,7 +274,7 @@ if nmcli con show mowerbase-ap &>/dev/null; then
   warn "AP profile 'mowerbase-ap' already exists — skipping"
 else
   nmcli con add type wifi ifname wlan0 con-name "mowerbase-ap" \
-    ssid "MowerBase" \
+    ssid "BaseStation" \
     wifi.mode ap \
     ipv4.method shared \
     ipv4.addresses "10.42.0.1/24" \
@@ -332,7 +332,7 @@ systemctl start mowerbase-web.service  && success "mowerbase-web started"  || wa
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║         MowerBase Install Complete!            ║${NC}"
+echo -e "${GREEN}║         BaseStation Install Complete!            ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════════╝${NC}"
 echo ""
 echo "  Dashboard:  http://mowerbase.local:8080"

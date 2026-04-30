@@ -1,5 +1,5 @@
 [Unit]
-Description=MowerBase Web Service — Flask dashboard + OLED + LED
+Description=BaseStation Web Service — Flask dashboard + OLED + LED
 Documentation=https://github.com/yourusername/mowerbase
 After=mowerbase-gps.service network.target
 # Web service is independent of ntrip/sik — always runs even if NTRIP is unavailable.

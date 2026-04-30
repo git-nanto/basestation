@@ -1,5 +1,5 @@
 [Unit]
-Description=MowerBase NTRIP Server/Client
+Description=BaseStation NTRIP Server/Client
 After=mowerbase-gps.service
 Wants=network.target
 

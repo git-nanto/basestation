@@ -1,5 +1,5 @@
 [Unit]
-Description=MowerBase SiK Forwarder — RTCM pipe to SiK 915MHz radio
+Description=BaseStation SiK Forwarder — RTCM pipe to SiK 915MHz radio
 Documentation=https://github.com/yourusername/mowerbase
 After=mowerbase-ntrip.service
 # Note: SiK radio is optional — this service will wait/retry if radio is absent.

@@ -1,5 +1,5 @@
 [Unit]
-Description=MowerBase GPS Service — LC29H(BS) serial reader and Survey-In state machine
+Description=BaseStation GPS Service — LC29H(BS) serial reader and Survey-In state machine
 Documentation=https://github.com/yourusername/mowerbase
 After=network.target
 Wants=network.target

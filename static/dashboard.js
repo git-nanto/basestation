@@ -1,5 +1,5 @@
 /**
- * dashboard.js — Live dashboard updates for MowerBase.
+ * dashboard.js — Live dashboard updates for BaseStation.
  *
  * Polls /api/state every 3 seconds and updates DOM elements in place.
  * No external dependencies.
@@ -71,7 +71,7 @@ function updateHardwareBanner(state) {
       <strong>No GPS + No home WiFi.</strong>
       Connect the LC29H(BS) HAT to the GPIO header (UART jumper in Position B) and
       go to <a href="/network">Network</a> to connect to your home WiFi.
-      The MowerBase hotspot (<strong>MowerBase</strong>, no password) is always available for setup.
+      The BaseStation hotspot (<strong>BaseStation</strong>, no password) is always available for setup.
     </div>`;
   } else if (!serialOk) {
     html = `<div class="alert alert-warning">

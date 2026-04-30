@@ -1,5 +1,5 @@
 """
-oled.py — SSD1306 128x64 OLED display driver wrapper for MowerBase.
+oled.py — SSD1306 128x64 OLED display driver wrapper for BaseStation.
 
 Uses luma.oled to render display layouts based on current system state.
 Handles ImportError gracefully for development without OLED hardware.
@@ -99,7 +99,7 @@ class OledDisplay:
 
         with canvas(self._device) as draw:
             font = _get_font()
-            draw.text((0, 0),  "MowerBase     [FIXED]", font=font, fill="white")
+            draw.text((0, 0),  "BaseStation     [FIXED]", font=font, fill="white")
             draw.text((0, 16), f"{plugin}  {mountpoint}", font=font, fill="white")
             draw.text((0, 32), f"Drift: {drift_mm:+.0f}mm", font=font, fill="white")
             draw.text((0, 48), f"RTCM:{rtcm_kbps:.1f}k/s SiK:{sik_ok}", font=font, fill="white")
@@ -127,7 +127,7 @@ class OledDisplay:
 
         with canvas(self._device) as draw:
             font = _get_font()
-            draw.text((0, 0),  "MowerBase  [SURVEYING]", font=font, fill="white")
+            draw.text((0, 0),  "BaseStation  [SURVEYING]", font=font, fill="white")
             # Progress bar (y=16..24)
             draw.rectangle((0, 16, bar_width, 24), outline="white", fill="black")
             if filled > 0:
@@ -146,7 +146,7 @@ class OledDisplay:
 
         with canvas(self._device) as draw:
             font = _get_font()
-            draw.text((0, 0),  "MowerBase", font=font, fill="white")
+            draw.text((0, 0),  "BaseStation", font=font, fill="white")
             draw.text((0, 16), "[AWAITING NTRIP]", font=font, fill="white")
             draw.text((0, 32), f"NTRIP: {ntrip_str}", font=font, fill="white")
             draw.text((0, 48), f"Plugin: {plugin}", font=font, fill="white")
@@ -155,16 +155,16 @@ class OledDisplay:
         """Captive portal / no WiFi display."""
         with canvas(self._device) as draw:
             font = _get_font()
-            draw.text((0, 0),  "MowerBase   [NO WIFI]", font=font, fill="white")
+            draw.text((0, 0),  "BaseStation   [NO WIFI]", font=font, fill="white")
             draw.text((0, 16), "Connect to WiFi:", font=font, fill="white")
-            draw.text((0, 32), "SSID: MowerBase-Setup", font=font, fill="white")
+            draw.text((0, 32), "SSID: BaseStation-Setup", font=font, fill="white")
             draw.text((0, 48), "Then: 192.168.4.1", font=font, fill="white")
 
     def _render_status(self, status: str) -> None:
         """Generic status display."""
         with canvas(self._device) as draw:
             font = _get_font()
-            draw.text((0, 0),  "MowerBase", font=font, fill="white")
+            draw.text((0, 0),  "BaseStation", font=font, fill="white")
             draw.text((0, 24), status, font=font, fill="white")
 
     def clear(self) -> None:

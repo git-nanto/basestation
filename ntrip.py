@@ -1,5 +1,5 @@
 """
-ntrip.py — NTRIP server (caster) + optional NTRIP client for MowerBase.
+ntrip.py — NTRIP server (caster) + optional NTRIP client for BaseStation.
 
 Two modes, controlled by config.json "correction_source":
 
@@ -267,7 +267,7 @@ class NtripService:
                     f"GET /{mountpoint} HTTP/1.0\r\n"
                     f"Host: {host}:{port}\r\n"
                     f"Ntrip-Version: Ntrip/1.0\r\n"
-                    f"User-Agent: NTRIP MowerBase/1.0\r\n"
+                    f"User-Agent: NTRIP BaseStation/1.0\r\n"
                     f"{creds}"
                     f"\r\n"
                 )
@@ -446,7 +446,7 @@ class NtripService:
     # ── Main ──────────────────────────────────────────────────────────────────
 
     def run(self) -> None:
-        log.info("MowerBase NTRIP service starting (PID %d)", os.getpid())
+        log.info("BaseStation NTRIP service starting (PID %d)", os.getpid())
         signal.signal(signal.SIGUSR1, self._handle_sigusr1)
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 

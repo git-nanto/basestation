@@ -1,5 +1,5 @@
 """
-web.py — Flask web server for MowerBase.
+web.py — Flask web server for BaseStation.
 
 Routes:
   GET  /                  Dashboard
@@ -281,7 +281,7 @@ def swagger_page():
 
 
 # ── Captive portal detection ──────────────────────────────────────────────────
-# When a phone/laptop connects to the MowerBase AP, the OS probes these URLs.
+# When a phone/laptop connects to the BaseStation AP, the OS probes these URLs.
 # Returning the OS-expected response triggers the captive portal browser popup.
 
 @app.route("/generate_204")          # Android
@@ -341,7 +341,7 @@ def api_openapi():
     spec = {
         "openapi": "3.0.3",
         "info": {
-            "title": "MowerBase API",
+            "title": "BaseStation API",
             "version": "1.0.0",
             "description": (
                 "RTK Base Station control and monitoring API.\n\n"
@@ -378,7 +378,7 @@ def api_openapi():
                 "| ECEFy | parts[6] | Running-average ECEF Y (decimal metres) — updates each query |\n"
                 "| ECEFz | parts[7] | Running-average ECEF Z (decimal metres) — updates each query |\n\n"
                 "The module provides **no live accuracy field** via PAIR commands. "
-                "MowerBase derives a convergence indicator by computing the 3D delta between "
+                "BaseStation derives a convergence indicator by computing the 3D delta between "
                 "consecutive ECEF samples (parts[5..7]). As the running average stabilises, "
                 "this delta approaches zero. Returned in `svin_convergence` as `[{elapsed_s, delta_m}]`.\n\n"
 
@@ -443,7 +443,7 @@ def api_openapi():
                                         "type": "object",
                                         "description": "Home WiFi connection state (updated every ~6 s)",
                                         "properties": {
-                                            "home_connected": {"type": "boolean", "description": "True when connected to a home WiFi network (not the MowerBase AP)"},
+                                            "home_connected": {"type": "boolean", "description": "True when connected to a home WiFi network (not the BaseStation AP)"},
                                             "ssid":           {"type": "string",  "description": "SSID of connected home network, or empty string"},
                                         },
                                     },
@@ -866,7 +866,7 @@ def api_wifi_scan():
             if len(parts) == 2:
                 ssid = parts[0].strip()
                 signal = parts[1].strip()
-                if ssid and ssid not in seen and ssid != "MowerBase":
+                if ssid and ssid not in seen and ssid != "BaseStation":
                     seen.add(ssid)
                     networks.append({"ssid": ssid, "signal": signal})
         return jsonify({"ok": True, "networks": networks})
@@ -978,7 +978,7 @@ def api_restart():
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _get_current_wifi_ssid() -> str:
-    """Return the SSID of the active home WiFi connection (not the MowerBase AP)."""
+    """Return the SSID of the active home WiFi connection (not the BaseStation AP)."""
     try:
         result = subprocess.run(
             ["nmcli", "-t", "--escape", "no", "-f", "ACTIVE,SSID", "dev", "wifi"],
@@ -987,7 +987,7 @@ def _get_current_wifi_ssid() -> str:
         for line in result.stdout.splitlines():
             if line.startswith("yes:"):
                 ssid = line.split(":", 1)[1].strip()
-                if ssid and ssid != "MowerBase":
+                if ssid and ssid != "BaseStation":
                     return ssid
     except Exception:
         pass
@@ -995,7 +995,7 @@ def _get_current_wifi_ssid() -> str:
 
 
 def _get_ap_status() -> dict:
-    """Return status of the always-on MowerBase AP."""
+    """Return status of the always-on BaseStation AP."""
     active = False
     clients = 0
     try:
@@ -1017,7 +1017,7 @@ def _get_ap_status() -> dict:
                 pass
     except Exception:
         pass
-    return {"active": active, "ssid": "MowerBase", "ip": "10.42.0.1", "clients": clients}
+    return {"active": active, "ssid": "BaseStation", "ip": "10.42.0.1", "clients": clients}
 
 
 # ── App startup ───────────────────────────────────────────────────────────────
@@ -1051,7 +1051,7 @@ def main():
     cfg = load_config()
     port = cfg.get("web", {}).get("port", 8080)
 
-    log.info("MowerBase web server starting on port %d", port)
+    log.info("BaseStation web server starting on port %d", port)
 
     start_background_services(cfg)
 

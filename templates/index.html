@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — MowerBase{% endblock %}
+{% block title %}Dashboard — BaseStation{% endblock %}
 
 {% block content %}
 <h1>Dashboard</h1>
@@ -89,7 +89,7 @@ function resurveyAction(action) {
 }
 
 function restartServices() {
-  if (!confirm('Restart all MowerBase services?\n\nThe web UI will be unavailable for ~15 seconds.')) return;
+  if (!confirm('Restart all BaseStation services?\n\nThe web UI will be unavailable for ~15 seconds.')) return;
   const btn = document.getElementById('restart-btn');
   const msg = document.getElementById('restart-msg');
   btn.disabled = true;

@@ -486,7 +486,7 @@ All core files written and deployed. Services running on Pi Zero W v1 at `192.16
 | `templates/index.html` | ✅ Done | Hardware state banners (no GPS / no WiFi / both) |
 | `static/dashboard.js` | ✅ Done | Banner logic reading `gps.serial_ok` + `wifi.home_connected` |
 
-**Concurrent AP+STA:** Always-on open "MowerBase" WiFi AP via NetworkManager profile (`wifi.mode ap`, `ipv4.method shared`). Captive portal detection routes in Flask. Port **80** (authbind). GPS hardware gating via `gps.serial_ok`. WiFi gating via `wifi.home_connected`.
+**Fallback AP (not concurrent):** BCM43430 on Pi Zero W v1 cannot do concurrent AP+STA on the same wlan0 interface — NM drops home WiFi when AP activates. Design: `ap_manager.sh` polling loop brings AP up only when home WiFi is disconnected; brings it down immediately when home WiFi reconnects. `mowerbase-ap` NM profile has `connection.autoconnect no` — managed exclusively by ap_manager.sh. Captive portal detection routes in Flask. Port **80** (authbind). GPS hardware gating via `gps.serial_ok`. WiFi gating via `wifi.home_connected`.
 
 ---
 

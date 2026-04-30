@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# update.sh — Deploy updated MowerBase files to the Pi and restart services.
+# update.sh — Deploy updated BaseStation files to the Pi and restart services.
 #
 # Run from the mowerbase project directory:
 #   bash update.sh

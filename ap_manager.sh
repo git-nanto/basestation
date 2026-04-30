@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ap_manager.sh — WiFi fallback AP manager.
 #
-# Brings up the MowerBase AP when no home WiFi is connected.
+# Brings up the BaseStation AP when no home WiFi is connected.
 # Brings it down as soon as home WiFi reconnects.
 # BCM43430 (Pi Zero W) cannot do concurrent AP+STA on wlan0 — this script
 # keeps them mutually exclusive.
@@ -35,7 +35,7 @@ while true; do
     else
         # No home WiFi — AP must be up
         if [ -z "$AP_ACTIVE" ]; then
-            log "No home WiFi — starting AP (MowerBase)"
+            log "No home WiFi — starting AP (BaseStation)"
             nmcli con up "$AP_CON" 2>/dev/null
         fi
     fi
